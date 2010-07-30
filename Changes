@@ -1,5 +1,8 @@
 Revision history for Lingua-SV-Numbers
 
-0.01    Date/time
-        First version, released on an unsuspecting world.
+0.02	2010-07-30
+		Added num2sv_ordinal.
+
+0.01	2010-07-29
+		First version, released on an unsuspecting world.
 

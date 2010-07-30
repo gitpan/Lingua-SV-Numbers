@@ -1,11 +1,15 @@
 package Lingua::SV::Numbers;
 
 use Exporter 'import';
-@EXPORT_OK = qw/num2sv num2sv_cardinal/;
+@EXPORT_OK = qw/num2sv num2sv_cardinal num2sv_ordinal/;
 
 use warnings;
 use strict;
 use Carp;
+
+use constant {
+	ORDINAL => 1,	# flag passed to _translate()
+};
 
 
 
@@ -16,11 +20,18 @@ use Carp;
 #   triljon: en miljon biljoner
 #   kvadriljon: en miljon triljoner
 my %bases;
-@bases{0..20,30,40,50,60,70,80,90,100,1_000,10**6,10**9,10**12,10**18,10**24} = qw/
+@bases{0..20,30,40,50,60,70,80,90,100,1_000,10**6,10**9,10**12,10**18} = qw/
 	noll ett två tre fyra fem sex sju åtta nio tio
 	elva tolv tretton fjorton femton sexton sjutton arton nitton
 	tjugo trettio fyrtio femtio sextio sjuttio åttio nittio
-	hundra tusen miljon miljard biljon triljon kvadriljon
+	hundra tusen miljon miljard biljon triljon
+/;
+my %ordinalBases;
+@ordinalBases{sort {$a<=>$b} keys %bases} = qw/
+	nollte första andra tredje fjärde femte sjätte sjunde åttonde nionde tionde
+	elfte tolfte trettonde fjortonde femtonde sextonde sjuttonde artonde nittonde
+	tjugonde trettionde fyrtionde femtionde sextionde sjuttionde åttionde nittionde
+	hundrade tusende miljonte miljardte biljonte triljonte
 /;
 
 
@@ -28,23 +39,30 @@ my %bases;
 #--------------
 
 
-sub num2sv {
+*num2sv = \&num2sv_cardinal;
+sub num2sv_cardinal {
+	_num2sv( 0, @_ );
+}
+sub num2sv_ordinal {
+	_num2sv( ORDINAL, @_ );
+}
+sub _num2sv {
+	my $flags = shift;
 	carp "not exactly one argument given" if ( @_ != 1 );
 	my $x = shift;
 	if ( $x =~ m/^-?\d+$/ ) {
-		return _translate( _reduce( $x ) );
+		return _translate( $flags, _reduce( $x ) );
 	} else {
 		carp "not an integer";
 		return $x;
 	}
 }
-*num2sv_cardinal = \&num2sv;
 
 #--------------
 
 # Translates an array of reduced components.
 sub _translate {
-	#print "@_\n";
+	my $flags = shift;
 	my $str = '';
 	if ( $_[0] eq '-' ) {
 		$str = 'minus ';
@@ -54,7 +72,9 @@ sub _translate {
 	while ( @_ ) {
 		my $cur = shift;
 		my $next = $_[0];
-		if ( $prev && $prev > $cur && _precedingOne( $cur ) ) {
+		if ( ! $next && $flags & ORDINAL ) {
+			$str .= $ordinalBases{$cur};
+		} elsif ( $prev && $prev > $cur && _precedingOne( $cur ) ) {
 			$str .= ( _tWord( $cur ) ? 'ett' : 'en' ) . $bases{$cur};
 		} elsif ( $cur == 1 && $next ) {
 			if ( _precedingOne( $next ) ) {
@@ -67,7 +87,6 @@ sub _translate {
 		}
 		$prev = $cur;
 	}
-	#$str =~ s/^(hundra|tusen)/ett$1/;
 	$str =~ s/(.)\1{2,}/$1$1/g;
 	return $str;
 }
@@ -116,19 +135,18 @@ Lingua::SV::Numbers - Convert numbers into Swedish words.
 
 =head1 VERSION
 
-Version 0.01
+Version 0.02
 
 =cut
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 
 =head1 SYNOPSIS
 
-    use Lingua::SV::Numbers qw/num2sv/;
-    print num2sv( 99 ) . " röda luftballonger\n"; #-> nittionio röda luftballonger
-    print num2sv( 65536 ) . " bitar\n"; #-> sextiofemtusenfemhundratrettiosex bitar
-    print num2sv( 1001 ) . " natt\n"; #-> ettusenett
+    use Lingua::SV::Numbers qw/num2sv num2sv_ordinal/;
+    print num2sv( 99 ) . " luftballonger\n"; #-> nittionio luftballonger
+    print num2sv_ordinal( 13 ) . " timmen\n"; #-> trettonde timmen
 
 =head1 FUNCTIONS
 
@@ -138,20 +156,23 @@ These functions are provided but not exported by default.
 
 =item num2sv EXPR
 
-Returns the Swedish text corresponding to EXPR. Only integers (positive and
-negative) are supported.
+Alias for C<num2sv_cardinal>.
 
 =item num2sv_cardinal EXPR
 
-Alias for C<num2sv>.
+Returns a Swedish string of the cardinal number corresponding to EXPR. Only
+integers (positive and negative) are supported. E.g. 3 => "tre"
+
+=item num2sv_ordinal EXPR
+
+Returns a Swedish string of the ordinal number corresponding to EXPR. Only
+integers (positive and negative) are supported. E.g. 3 => "tredje"
 
 =back
 
 =head1 TODO
 
 =over 4
-
-=item * num2sv_ordinal
 
 =item * support fractions
 
