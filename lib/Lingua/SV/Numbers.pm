@@ -72,15 +72,24 @@ sub _translate {
 	while ( @_ ) {
 		my $cur = shift;
 		my $next = $_[0];
+
+		if ( $prev && $prev > $cur && _precedingOne( $cur ) ) {
+			$str .= ( _tWord( $cur ) ? 'ett' : 'en' );
+		}
+
 		if ( ! $next && $flags & ORDINAL ) {
+			if ( $cur > 10**6 ) {
+				carp( "There is no word for ordinal $cur in Swedish" );
+			}
 			$str .= $ordinalBases{$cur};
-		} elsif ( $prev && $prev > $cur && _precedingOne( $cur ) ) {
-			$str .= ( _tWord( $cur ) ? 'ett' : 'en' ) . $bases{$cur};
 		} elsif ( $cur == 1 && $next ) {
 			if ( _precedingOne( $next ) ) {
 				$str .= _tWord( $next ) ? 'ett' : 'en';
-			} else {}
-		} elsif ( $prev && $prev > 1 && ! _degeneratePlural( $cur ) ) {
+			}
+		} elsif (
+			$prev && 1 < $prev && $prev < $cur &&
+			! _degeneratePlural( $cur )
+		) {
 			$str .= $bases{$cur} . 'er';
 		} else {
 			$str .= $bases{$cur};
@@ -135,11 +144,11 @@ Lingua::SV::Numbers - Convert numbers into Swedish words.
 
 =head1 VERSION
 
-Version 0.02
+Version 0.03
 
 =cut
 
-our $VERSION = '0.02';
+our $VERSION = '0.03';
 
 
 =head1 SYNOPSIS
