@@ -1,6 +1,6 @@
 --- #YAML:1.0
 name:               Lingua-SV-Numbers
-version:            0.03.01
+version:            0.04.00
 abstract:           Convert numbers into Swedish words.
 author:
     - Tim Nordenfur <tim@gurka.se>
