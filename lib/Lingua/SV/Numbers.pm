@@ -1,6 +1,6 @@
 package Lingua::SV::Numbers;
 
-use Exporter 'import';
+use Exporter 5.57 'import';
 @EXPORT_OK = qw/num2sv num2sv_cardinal num2sv_ordinal/;
 
 use warnings;
@@ -148,7 +148,7 @@ Version 0.03
 
 =cut
 
-our $VERSION = '0.03';
+our $VERSION = '0.03.01';
 
 
 =head1 SYNOPSIS

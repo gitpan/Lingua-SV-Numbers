@@ -1,5 +1,9 @@
 Revision history for Lingua-SV-Numbers
 
+0.03.01	2010-08-10
+		Specified version of Export needed.
+		Changed version format.
+
 0.03	2010-08-09
 		Carp on invalid num2sv_ordinal (such as 10^9).
 		Cleanup and minor fixes.
